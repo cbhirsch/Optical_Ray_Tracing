@@ -15,10 +15,5 @@ def plane_refract_ray(y, slope, thickness,n, z, i):
     slope2 = np.tan(theta2)
     ray_air = np.round(((z-thickness)* slope2 + y),2)
     z = np.arange(2,42.02,.01)
-    if i == 10:
-        fig, plane_refract_check = plt.subplots()
-        plane_refract_check.set(xlim=(0,43),ylim=(-7,7))
-        plane_refract_check.plot(z,ray_air,'r') #Rays
-        plt.show()
     
     return ray_air

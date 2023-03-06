@@ -18,20 +18,28 @@ number_rays = 11
 
 #Generate ray starting heights
 dy = (2*aperture + 1)/number_rays
-print("dy:", dy)
 y = np.arange(-aperture, aperture + 1, dy)
-print("y", y)
 
 #Ray Matrix
 [raymatrix, x_front, x_optaxis, zmax] = plano_convex(n,radius,thickness,dz,y)
 
 #Figure
-#front_lens = np.sqrt(radius**2 - np.power((x_front-radius),2))
+front_lens = np.sqrt(radius**2 - np.power((x_front-radius),2))
 fig, ray_tracing = plt.subplots()
-ray_tracing.set(xlim=(min(x_optaxis)-1,max(x_optaxis)),ylim=(min(y)-1,max(y)+1))
+ray_tracing.set(xlim=(min(x_optaxis)-1,max(x_optaxis)),ylim=(min(y)-6,max(y)+6))
 for i in range(0,len(y)):
     ray_tracing.plot(x_optaxis, raymatrix[i],'r') #Rays
 
-# Lens back surface
-#ray_tracing.plot(x_front, front_lens,'b', linewidth = 5.0)
+# Lens Front surface
+ray_tracing.plot(x_front, front_lens,'b', x_front, -front_lens, 'b', linewidth = 3.0)
+
+# Len Back Surface
+x_back = [thickness, thickness]
+y_back = [max(front_lens),-max(front_lens)]
+ray_tracing.plot(x_back,y_back, 'b', linewidth = 3.0 )
+
+#Optical axis
+ray_tracing.plot(x_optaxis, np.zeros(len(x_optaxis)), 'k--')
+
+ray_tracing.plot()
 plt.show()
