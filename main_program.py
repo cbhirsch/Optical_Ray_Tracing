@@ -43,3 +43,26 @@ ray_tracing.plot(x_optaxis, np.zeros(len(x_optaxis)), 'k--')
 
 ray_tracing.plot()
 plt.show()
+
+#Find where each ray crosses optical axis
+ray_focus = np.zeros((1,len(y)), dtype = float, order = 'c')
+print(ray_focus)
+print(raymatrix)
+for i in range(len(y)):
+    ray_focus[0,i]=np.argmin(abs(raymatrix[i]))
+            
+
+print(ray_focus)
+    
+
+#Find where paraxial ray crosses optical axis
+print(int(np.ceil(len(y)/2)))
+paraxial_focus = int(ray_focus[0,int(np.ceil(len(y)/2))])
+print(raymatrix.shape)
+
+print(raymatrix[:,paraxial_focus])
+
+#Ray fan plot
+fig, ray_fan_plot = plt.subplots()
+ray_fan_plot.plot(y, raymatrix[:,paraxial_focus])
+plt.show()
