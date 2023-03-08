@@ -66,3 +66,4 @@ print(raymatrix[:,paraxial_focus])
 fig, ray_fan_plot = plt.subplots()
 ray_fan_plot.plot(y, raymatrix[:,paraxial_focus])
 plt.show()
+
