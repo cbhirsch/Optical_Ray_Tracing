@@ -13,8 +13,8 @@ from safe_arange import *
 n = 1.5168  #Index of refraction of lens
 radius = 20 # Radius of spherical surface
 thickness = 2 #Central thickness of lens
-dz = 0.01 #step size for computation purposes
-dec = 2 #decimal point accuracy
+dz = 0.001 #step size for computation purposes
+dec = 3 #decimal point accuracy
 aperture = 5
 number_rays = 11
 

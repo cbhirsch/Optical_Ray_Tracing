@@ -28,13 +28,13 @@ def plano_convex(n, radius, thickness, dz, y, dec):
     #Ray Tracing
     for i in range(0,len(y)):
         #Refraction at spherical surface
-        [ray_lens, slope, x_lens] = sphere_refract_ray(y[i], radius, thickness, n, dz)
+        [ray_lens, slope, x_lens] = sphere_refract_ray(y[i], radius, thickness, n, dz, dec)
         
         #Refraction at plane surface
-        ray_air = plane_refract_ray(ray_lens[-1], slope, thickness, n, z_back, i)
+        ray_air = plane_refract_ray(ray_lens[-1], slope, thickness, n, z_back)
         
         #Incoming ray
-        x_front_air = np.arange(0, x_lens[0],dz)
+        x_front_air = safe_arange(0, x_lens[0],dz,dec)
         ray_front_air = y[i]*np.ones((len(x_front_air)))
         
                                      
