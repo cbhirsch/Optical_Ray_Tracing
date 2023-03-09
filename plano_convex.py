@@ -21,7 +21,7 @@ def plano_convex(n, radius, thickness, dz, y):
     z_back = np.arange(thickness,zmax+2*dz,dz)
     z_optaxis = np.concatenate((z_front, z_back))
     
-    y[y==0]=10**(-10)
+    #y[y==0]=10**(-10)
     raymatrix = np.zeros((len(y), len(z_optaxis)), dtype=float, order='C')
     
     #Ray Tracing
