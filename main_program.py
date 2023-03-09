@@ -8,20 +8,23 @@ Created on Tue Feb 28 09:46:58 2023
 import numpy as np
 import matplotlib.pyplot as plt
 from plano_convex import *
+from safe_arange import *
 
 n = 1.5168  #Index of refraction of lens
 radius = 20 # Radius of spherical surface
 thickness = 2 #Central thickness of lens
 dz = 0.01 #step size for computation purposes
+dec = 2 #decimal point accuracy
 aperture = 5
 number_rays = 11
 
 #Generate ray starting heights
 dy = (2*aperture + 1)/number_rays
-y = np.arange(-aperture, aperture + 1, dy)
+y = safe_arange(-aperture, aperture, dy, dec)
+print("y after safe arange:",y)
 
 #Ray Matrix
-[raymatrix, x_front, x_optaxis, zmax] = plano_convex(n,radius,thickness,dz,y)
+[raymatrix, x_front, x_optaxis, zmax] = plano_convex(n,radius,thickness,dz,y, dec)
 
 #Figure
 front_lens = np.sqrt(radius**2 - np.power((x_front-radius),2))

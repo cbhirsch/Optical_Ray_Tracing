@@ -8,17 +8,18 @@ Created on Mon Feb 27 14:19:24 2023
 import numpy as np
 from sphere_refract_ray import *
 from plane_refract_ray import *
+from safe_arange import *
 
 
-def plano_convex(n, radius, thickness, dz, y):
+def plano_convex(n, radius, thickness, dz, y, dec):
     
     power = (n-1)/radius #lens power
     f = 1/power #paraxial focal length
     
     #Setting up the Z-Axis
     zmax = np.floor(f+.1*f)
-    z_front = np.arange(0,thickness,dz)
-    z_back = np.arange(thickness,zmax+2*dz,dz)
+    z_front = safe_arange(0,thickness,dz,dec)
+    z_back = safe_arange(thickness,zmax+2*dz,dz,dec)
     z_optaxis = np.concatenate((z_front, z_back))
     
     #y[y==0]=10**(-10)
