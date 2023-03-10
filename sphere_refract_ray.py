@@ -20,6 +20,6 @@ def sphere_refract_ray(y, radius, thickness,n,dz,dec):
     phi2 = np.arcsin(sin_phi2)
     theta = phi2-phi1 
     slope = np.tan(theta)
-    ray = np.round((slope*(z-sag)+y), 2)
+    ray = (slope*(z-sag)+y)
     
     return ray, slope, z
