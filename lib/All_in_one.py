@@ -82,30 +82,86 @@ plt.show()
 This will plot all data for the Ray Matrix terms
 
 """
+class Product_Matrix:
+    def __init__(self):
+        self.raymatrix = []
+
+    def Current(self):
+        print("This is the information on current product matrix:")
+        print("Aperture:",self.aperture)
+        print("# of Rays:",  self.number_rays)
+        print("decimal places:", self.dec)
+        print("y rays:", self.y)
+        print("Lens Radius:", self.radius)
+
+    def start(self,aperture, number_rays, dz, dec, dist = 0):
+        self.aperture = aperture
+        self.number_rays = number_rays
+        # This is a placeholder for now
+        self.slope = 0
+        self.dz = dz
+        self.dec = dec
+
+        #Generate ray starting heights
+        self.dy = (2*aperture + 1)/number_rays
+        self.y = safe_arange(-aperture, aperture, self.dy, dec)
+
+    def Add_Lens(self, Lens):
+        self.radius = Lens.radius
+
+    
+
+
+
+
+
 
 #Starting Conditions
-class start:
+""" class start(raymatrix):
     def __init__(self,aperture, number_rays, dz, dec):
         self.aperture = aperture
         self.number_rays = number_rays
         self.dz = dz
         self.dec = dec
         self.dy = (2*aperture +1)/number_rays
-        self.y = safe_arange(-aperture, aperture, self.dy, dec)
-        return self.dz,self.dec, self.dy, self.y
+        self.y = safe_arange(-aperture, aperture, self.dy, dec) """
 
 
 #Lens Setup
 
 """ 
 Currently trying to get this class to take the output 
-of the star class.  
+of the start class.  
 
 """
 
 class Lens:
-    def __init__(self,n, radius, thickness,start):
-       self.n = n
-       self.radius = radius
-       self.thickness = thickness
+    pass
+
+class plano_convex(Lens):
+    def __init__(self,n,radius, thickness):
+        self.n = n
+        self.radius = radius
+        self.thickness = thickness
     
+    def Current(self):
+        print("This is the information Lens:")
+        print("n:",self.n)
+        print("radius:",  self.radius)
+        print("thickness:", self.thickness)
+    
+""" class Image_plane(raymatrix):
+    pass
+ """
+
+#Initialize Lens
+Lens1 = plano_convex(1.5168, 20, 2)
+Lens2 = plano_convex(2.635, 30, 2)
+
+#Run the Ray Tracing
+example1 = Product_Matrix()
+example1.start(5, 11, 0.001,3,)
+example1.Add_Lens(Lens1)
+example1.Current()
+example1.Add_Lens(Lens2)
+example1.Current()
