@@ -3,6 +3,13 @@ import matplotlib.pyplot as plt
 
 #Useful Functions
 
+""" 
+
+The functions below will be callable libraries that can be used throughout
+The Program.  They are not designed to be included in the main program.
+
+"""
+
 #This arange function is designed to be more precise with floating point numbers
 def safe_arange(start, stop, step, dec):
     round_start = round(start, dec)
@@ -41,8 +48,9 @@ def plane_refract_ray(y, slope, thickness,n, z):
     
 """ 
 Main Program 
-This describes the ultimate goal of this program.
-Current program may or may not operate this way currently
+This describes the ultimate goal of this program and how it's 
+intended to be used when called by a user.
+Current program may or may not operate this way currently.
 
 The main program will work by calling functions as follows below:
 
@@ -53,13 +61,25 @@ start = exactraytrace.start(start = 'inf', dist, #_of_rays, aperture)
 #Lens1
 lens_1 = exactraytrace.lens(front_surf, back_surface, dia, n, dist)
 
+Will neet to return the ending location of y and a slope value and
+communicate this to the next call location.
+
 #Lens2
 lens_2 = exactraytrace.lens(front_surf, back_surface, dia, n, dist)
+
+Will neet to return the ending location of y and a slope value and
+communicate this to the next call location.
 
 #Finish
 Final = concatenate(start, lens_1, len_2)
 
+This final function will combine a ray matrix for both X & Y terms
+
 plot
+
+plt.show()
+
+This will plot all data for the Ray Matrix terms
 
 """
 
@@ -72,15 +92,20 @@ class start:
         self.dec = dec
         self.dy = (2*aperture +1)/number_rays
         self.y = safe_arange(-aperture, aperture, self.dy, dec)
+        return self.dz,self.dec, self.dy, self.y
 
-    def start_output(self)
-        return 
 
 #Lens Setup
+
+""" 
+Currently trying to get this class to take the output 
+of the star class.  
+
+"""
+
 class Lens:
     def __init__(self,n, radius, thickness,start):
        self.n = n
        self.radius = radius
        self.thickness = thickness
-       self.d_next = d_next 
     
