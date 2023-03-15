@@ -110,6 +110,7 @@ class Product_Matrix:
         print("raymatrix: \n", self.raymatrix.shape)
 
     def Add_Lens(self, Lens):
+        self.thickness = Lens.thickness
 
         self.radius = Lens.radius
         power = ( Lens.n - 1)/Lens.radius #lens power
@@ -146,16 +147,54 @@ class Product_Matrix:
                 concatenated_string = np.concatenate((ray_front_air, ray_lens[0: len(ray_lens)-1], ray_air))
                 self.raymatrix[i] = self.raymatrix[i] + concatenated_string
 
-        return self.raymatrix, self.z_front, self.z_optaxis, zmax
+        return self.raymatrix, self.z_front, self.z_optaxis, zmax, self.thickness
     
     def plot(self):
+        thickness = self.thickness
+        x_front = self.z_front
+        self.x_optaxis = self.z_optaxis
+
+        #Figure
+        front_lens = np.sqrt(self.radius**2 - np.power((x_front-self.radius),2))
         fig, ray_tracing = plt.subplots()
         ray_tracing.set(xlim = (min(self.z_optaxis)-1, max(self.z_optaxis)),ylim = (min(self.y)-6,max(self.y)+6))
         for i in range(0,len(self.y)):
             ray_tracing.plot(self.z_optaxis, self.raymatrix[i], 'r') #Rays
+        
+        #Lens front surface
+        ray_tracing.plot(x_front, front_lens,'b', x_front, -front_lens, 'b', linewidth = 3.0)
+
+        # Len Back Surface
+        x_back = [thickness, thickness]
+        y_back = [max(front_lens),-max(front_lens)]
+        ray_tracing.plot(x_back,y_back, 'b', linewidth = 3.0 )
+
+        #Optical axis
+        ray_tracing.plot(self.x_optaxis, np.zeros(len(self.x_optaxis)), 'k--')
+        
+        plt.show()
+    
+    def spherical_aberation(self):
+
+        #Find where each ray crosses optical axis
+        ray_focus = np.zeros((1,len(self.y)), dtype = int, order = 'c')
+        for i in range(len(self.y)):
+            ray_focus[0,i]=np.argmin(abs(self.raymatrix[i]))
+
+        #Find where paraxial ray crosses optical axis
+        paraxial_focus = int(ray_focus[0,int(np.ceil(len(self.y)/2))])
+
+        #Ray fan plot
+        fig, ray_fan_plot = plt.subplots()
+        ray_fan_plot.plot(self.y, self.raymatrix[:,paraxial_focus])
         plt.show()
 
-    
+        #Spherical Aberation
+        pos_y = np.transpose(np.argwhere(self.y>0))
+        spher_ab = self.x_optaxis[ray_focus[0,pos_y[0]]]
+        fig, spher_ab_plot = plt.subplots()
+        spher_ab_plot.plot(spher_ab - spher_ab[1],self.y[np.argwhere(self.y>0)])
+        plt.show()
 
 
     
@@ -198,10 +237,6 @@ class plano_convex(Lens):
         print("n:",self.n)
         print("radius:",  self.radius)
         print("thickness:", self.thickness)
-    
-""" class Image_plane(raymatrix):
-    pass
- """
 
 #Initialize Lens
 Lens1 = plano_convex(1.5168, 20, 2)
@@ -214,3 +249,4 @@ example1.Add_Lens(Lens1)
 example1.Current()
 example1.Matrix_state()
 example1.plot()
+example1.spherical_aberation()
