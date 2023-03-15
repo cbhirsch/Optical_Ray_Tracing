@@ -106,8 +106,50 @@ class Product_Matrix:
         self.dy = (2*aperture + 1)/number_rays
         self.y = safe_arange(-aperture, aperture, self.dy, dec)
 
+    def Matrix_state(self):
+        print("raymatrix: \n", self.raymatrix.shape)
+
     def Add_Lens(self, Lens):
+
         self.radius = Lens.radius
+        power = ( Lens.n - 1)/Lens.radius #lens power
+        f = 1/power #paraxial focal length
+
+        #setting up the Z-Axis
+        zmax = np.floor(f + .1*f)
+        self.z_front = safe_arange(0,Lens.thickness, self.dz, self.dec)
+        z_back = safe_arange(Lens.thickness, zmax+2*self.dz, self.dz, self.dec)
+        self.z_optaxis = np.concatenate((self.z_front, z_back))
+
+        #Setting up the empty raymatrix likely to change this step in future iterations
+        self.raymatrix = np.zeros((len(self.y),len(self.z_optaxis)))
+
+        #Ray Tracing
+        for i in range(0, len(self.y)):
+            #Refraction at spherical surface
+            [ray_lens, slope, x_lens] =  sphere_refract_ray(self.y[i], Lens.radius, Lens.thickness, Lens.n, self.dz, self.dec)
+
+            #Refractionat plane surface
+            ray_air = plane_refract_ray(ray_lens[-1], slope, Lens.thickness, Lens.n, z_back)
+
+            #Incomeing Ray
+            x_front_air = safe_arange(0, x_lens[0], self.dz, self.dec)
+            ray_front_air = self.y[i]*np.ones((len(x_front_air)))
+
+            #Create matrix of rays (adjust length if necessary)
+            ray_length = len(ray_lens) + len(ray_air) + len(x_front_air)
+            optic_axis_length = len(self.z_optaxis)
+
+            if ray_length <= optic_axis_length:
+                self.raymatrix[i] = self.raymatrix[i] + np.concatenate((ray_front_air, ray_lens, ray_air))
+            else:
+                concatenated_string = np.concatenate((ray_front_air, ray_lens[0: len(ray_lens)-1], ray_air))
+                self.raymatrix[i] = self.raymatrix[i] + concatenated_string
+
+        return self.raymatrix, self.z_front, self.z_optaxis, zmax
+
+    
+
 
     
 
@@ -139,7 +181,7 @@ class Lens:
     pass
 
 class plano_convex(Lens):
-    def __init__(self,n,radius, thickness):
+    def __init__(self, n, radius, thickness):
         self.n = n
         self.radius = radius
         self.thickness = thickness
@@ -160,8 +202,7 @@ Lens2 = plano_convex(2.635, 30, 2)
 
 #Run the Ray Tracing
 example1 = Product_Matrix()
-example1.start(5, 11, 0.001,3,)
+example1.start(5, 11, 0.01,2,)
 example1.Add_Lens(Lens1)
 example1.Current()
-example1.Add_Lens(Lens2)
-example1.Current()
+example1.Matrix_state()
