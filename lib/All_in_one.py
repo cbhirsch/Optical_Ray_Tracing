@@ -238,15 +238,19 @@ class plano_convex(Lens):
         print("radius:",  self.radius)
         print("thickness:", self.thickness)
 
-#Initialize Lens
-Lens1 = plano_convex(1.5168, 20, 2)
-Lens2 = plano_convex(2.635, 30, 2)
 
-#Run the Ray Tracing
-example1 = Product_Matrix()
-example1.start(5, 11, 0.01,2,)
-example1.Add_Lens(Lens1)
-example1.Current()
-example1.Matrix_state()
-example1.plot()
-example1.spherical_aberation()
+""" #Example Code
+if __name__ == "__main__":
+
+    #Initialize Lens
+    Lens1 = plano_convex(1.5168, 20, 2)
+    Lens2 = plano_convex(2.635, 30, 2)
+
+    #Run the Ray Tracing
+    example1 = Product_Matrix()
+    example1.start(5, 11, 0.01,2,)
+    example1.Add_Lens(Lens1)
+    example1.Current()
+    example1.Matrix_state()
+    example1.plot()
+    example1.spherical_aberation() """
