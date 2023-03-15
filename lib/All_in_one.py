@@ -147,6 +147,13 @@ class Product_Matrix:
                 self.raymatrix[i] = self.raymatrix[i] + concatenated_string
 
         return self.raymatrix, self.z_front, self.z_optaxis, zmax
+    
+    def plot(self):
+        fig, ray_tracing = plt.subplots()
+        ray_tracing.set(xlim = (min(self.z_optaxis)-1, max(self.z_optaxis)),ylim = (min(self.y)-6,max(self.y)+6))
+        for i in range(0,len(self.y)):
+            ray_tracing.plot(self.z_optaxis, self.raymatrix[i], 'r') #Rays
+        plt.show()
 
     
 
@@ -206,3 +213,4 @@ example1.start(5, 11, 0.01,2,)
 example1.Add_Lens(Lens1)
 example1.Current()
 example1.Matrix_state()
+example1.plot()
