@@ -1,3 +1,5 @@
+import numpy as np
+
 #This arange function is designed to be more precise with floating point numbers
 def safe_arange(start, stop, step, dec):
     round_start = round(start, dec)
