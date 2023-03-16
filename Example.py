@@ -1,4 +1,4 @@
-import lib.All_in_one as raytrace
+import exactraytrace as raytrace
 
 #Initialize Lens
 Lens1 = raytrace.plano_convex(1.5168, 20, 2)
