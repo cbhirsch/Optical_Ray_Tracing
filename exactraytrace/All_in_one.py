@@ -1,5 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from Surfaces import *
+import Functions as Func
 
 #Useful Functions
 
@@ -10,17 +12,17 @@ The Program.  They are not designed to be included in the main program.
 
 """
 
-#This arange function is designed to be more precise with floating point numbers
+""" #This arange function is designed to be more precise with floating point numbers
 def safe_arange(start, stop, step, dec):
     round_start = round(start, dec)
     round_stop = round(stop, dec)
     int_start = round(round_start/step)
     int_stop = round(round_stop/step)
 
-    return step * np.arange(int_start, int_stop+1)
+    return step * np.arange(int_start, int_stop+1) """
 
 
-# These are the Surface Functions
+""" # These are the Surface Functions
 
 def sphere_refract_ray(y, radius, thickness,n,dz,dec):
     
@@ -44,8 +46,10 @@ def plane_refract_ray(y, slope, thickness,n, z):
     slope2 = np.tan(theta2)
     ray_air = ((z-thickness)* slope2 + y)
     
-    return ray_air
-    
+    return ray_air """
+
+
+
 """ 
 Main Program 
 This describes the ultimate goal of this program and how it's 
@@ -104,7 +108,7 @@ class Product_Matrix:
 
         #Generate ray starting heights
         self.dy = (2*aperture + 1)/number_rays
-        self.y = safe_arange(-aperture, aperture, self.dy, dec)
+        self.y = Func.safe_arange(-aperture, aperture, self.dy, dec)
 
     def Matrix_state(self):
         print("raymatrix: \n", self.raymatrix.shape)
@@ -118,8 +122,8 @@ class Product_Matrix:
 
         #setting up the Z-Axis
         zmax = np.floor(f + .1*f)
-        self.z_front = safe_arange(0,Lens.thickness, self.dz, self.dec)
-        z_back = safe_arange(Lens.thickness, zmax+2*self.dz, self.dz, self.dec)
+        self.z_front = Func.safe_arange(0,Lens.thickness, self.dz, self.dec)
+        z_back = Func.safe_arange(Lens.thickness, zmax+2*self.dz, self.dz, self.dec)
         self.z_optaxis = np.concatenate((self.z_front, z_back))
 
         #Setting up the empty raymatrix likely to change this step in future iterations
@@ -134,7 +138,7 @@ class Product_Matrix:
             ray_air = plane_refract_ray(ray_lens[-1], slope, Lens.thickness, Lens.n, z_back)
 
             #Incomeing Ray
-            x_front_air = safe_arange(0, x_lens[0], self.dz, self.dec)
+            x_front_air = Func.safe_arange(0, x_lens[0], self.dz, self.dec)
             ray_front_air = self.y[i]*np.ones((len(x_front_air)))
 
             #Create matrix of rays (adjust length if necessary)
@@ -196,25 +200,6 @@ class Product_Matrix:
         spher_ab_plot.plot(spher_ab - spher_ab[1],self.y[np.argwhere(self.y>0)])
         plt.show()
 
-
-    
-
-
-
-
-
-
-#Starting Conditions
-""" class start(raymatrix):
-    def __init__(self,aperture, number_rays, dz, dec):
-        self.aperture = aperture
-        self.number_rays = number_rays
-        self.dz = dz
-        self.dec = dec
-        self.dy = (2*aperture +1)/number_rays
-        self.y = safe_arange(-aperture, aperture, self.dy, dec) """
-
-
 #Lens Setup
 
 """ 
@@ -239,7 +224,7 @@ class plano_convex(Lens):
         print("thickness:", self.thickness)
 
 
-""" #Example Code
+#Example Code
 if __name__ == "__main__":
 
     #Initialize Lens
@@ -253,4 +238,4 @@ if __name__ == "__main__":
     example1.Current()
     example1.Matrix_state()
     example1.plot()
-    example1.spherical_aberation() """
+    example1.spherical_aberation()
