@@ -1,10 +1,10 @@
 import numpy as np
-import Functions as Func
+from exactraytrace.Functions import safe_arange
 
 def sphere_refract_ray(y, radius, thickness,n,dz,dec):
     
     sag = radius - np.sqrt(radius**2 - y**2) #lens sag at y
-    z = Func.safe_arange(sag, thickness, dz, dec)
+    z = safe_arange(sag, thickness, dz, dec)
     
     sin_phi1 = y/radius
     sin_phi2 = sin_phi1/n

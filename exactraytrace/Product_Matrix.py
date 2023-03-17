@@ -1,7 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from Surfaces import *
-import Functions as Func
+from exactraytrace.Surfaces import *
+from exactraytrace.Functions import safe_arange
+
 """ 
 Main Program 
 This describes the ultimate goal of this program and how it's 
@@ -60,7 +61,7 @@ class Product_Matrix:
 
         #Generate ray starting heights
         self.dy = (2*aperture + 1)/number_rays
-        self.y = Func.safe_arange(-aperture, aperture, self.dy, dec)
+        self.y = safe_arange(-aperture, aperture, self.dy, dec)
 
     def Matrix_state(self):
         print("raymatrix: \n", self.raymatrix.shape)
@@ -74,8 +75,8 @@ class Product_Matrix:
 
         #setting up the Z-Axis
         zmax = np.floor(f + .1*f)
-        self.z_front = Func.safe_arange(0,Lens.thickness, self.dz, self.dec)
-        z_back = Func.safe_arange(Lens.thickness, zmax+2*self.dz, self.dz, self.dec)
+        self.z_front = safe_arange(0,Lens.thickness, self.dz, self.dec)
+        z_back = safe_arange(Lens.thickness, zmax+2*self.dz, self.dz, self.dec)
         self.z_optaxis = np.concatenate((self.z_front, z_back))
 
         #Setting up the empty raymatrix likely to change this step in future iterations
@@ -90,7 +91,7 @@ class Product_Matrix:
             ray_air = plane_refract_ray(ray_lens[-1], slope, Lens.thickness, Lens.n, z_back)
 
             #Incomeing Ray
-            x_front_air = Func.safe_arange(0, x_lens[0], self.dz, self.dec)
+            x_front_air = safe_arange(0, x_lens[0], self.dz, self.dec)
             ray_front_air = self.y[i]*np.ones((len(x_front_air)))
 
             #Create matrix of rays (adjust length if necessary)
