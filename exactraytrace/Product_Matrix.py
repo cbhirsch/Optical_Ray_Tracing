@@ -3,65 +3,74 @@ import matplotlib.pyplot as plt
 from exactraytrace.Surfaces import sphere_refract_ray,plane_refract_ray
 from exactraytrace.Functions import safe_arange
 
-""" 
-Main Program 
-This describes the ultimate goal of this program and how it's 
-intended to be used when called by a user.
-Current program may or may not operate this way currently.
-
-The main program will work by calling functions as follows below:
-
-#Starting Conditions
-start can be equal too 'inf' or 'point'
-start = exactraytrace.start(start = 'inf', dist, #_of_rays, aperture)
-
-#Lens1
-lens_1 = exactraytrace.lens(front_surf, back_surface, dia, n, dist)
-
-Will neet to return the ending location of y and a slope value and
-communicate this to the next call location.
-
-#Lens2
-lens_2 = exactraytrace.lens(front_surf, back_surface, dia, n, dist)
-
-Will neet to return the ending location of y and a slope value and
-communicate this to the next call location.
-
-#Finish
-Final = concatenate(start, lens_1, len_2)
-
-This final function will combine a ray matrix for both X & Y terms
-
-plot
-
-plt.show()
-
-This will plot all data for the Ray Matrix terms
-
-"""
 class Product_Matrix:
+    """ 
+    Designates the object that will be used to build the matrix for plotting
+    the rays as they travel through the lens system.
+    """
     def __init__(self):
         self.raymatrix = []
 
+    """ 
+    Function used for tracking the current state of the class
+    """
     def Current(self):
         print("This is the information on current product matrix:")
         print("Aperture:",self.aperture)
         print("# of Rays:",  self.number_rays)
         print("decimal places:", self.dec)
         print("y rays:", self.y)
-        print("Lens Radius:", self.radius)
+        # print("Lens Radius:", self.radius)
+        print("raymatrix:", self.raymatrix)
+        print("z_opticaxis:", self.z_optaxis)
 
-    def start(self,aperture, number_rays, dz, dec, dist = 0):
+    """
+    This function defines the starting conditions of the ray tracing algorithm:
+
+    The function can take in the below variables:
+    aperture- this defines the starting aperture of the lens and is used to determine 
+    the total height of the ray fan
+
+    number_rays- this variable dictates the number of rays that will be used for ray tracing
+
+    dz- This is the number of steps designated for building the matrix
+
+    dec- This is the number of decimal places designated in dz 
+
+    dist- This is the distance of starting point to the fist lens
+
+    inf- This dictates whether the rays are projecting from a focus point or are parellel
+    which is considered infinity focus in optics
+    """
+
+    def start(self,aperture, number_rays, dz, dec, dist = 0, inf = "True"):
         self.aperture = aperture
         self.number_rays = number_rays
-        # This is a placeholder for now
-        self.slope = 0
+        self.slope = np.zeros(number_rays, dtype= 'int', order = 'C')
         self.dz = dz
         self.dec = dec
 
         #Generate ray starting heights
         self.dy = (2*aperture + 1)/number_rays
         self.y = safe_arange(-aperture, aperture, self.dy, dec)
+
+        #Designating space for raymatrix
+
+        self.raymatrix = np.zeros((len(self.y), dist))
+        
+        #This function will fill the starting values in the raymatrix
+        if inf == "True":
+            for i in range(0,len(self.y)):
+                #This term will determine rays current slope
+                self.slope[i] = 0
+                self.raymatrix[i] = self.y[i]*np.ones(dist+1)
+        else:
+            pass
+
+        self.z_optaxis = safe_arange(0,dist, dz, dec)
+        
+
+
 
     def Matrix_state(self):
         print("raymatrix: \n", self.raymatrix.shape)
@@ -105,6 +114,14 @@ class Product_Matrix:
                 self.raymatrix[i] = self.raymatrix[i] + concatenated_string
 
         return self.raymatrix, self.z_front, self.z_optaxis, zmax, self.thickness
+    
+    def new_plot(self):
+        fig, ray_tracing = plt.subplots()
+        ray_tracing.set(xlim = (min(self.z_optaxis)-1, max(self.z_optaxis)),ylim = (min(self.y)-6,max(self.y)+6))
+        for i in range(0,len(self.y)):
+            ray_tracing.plot(self.z_optaxis, self.raymatrix[i], 'r') #Rays
+        
+        plt.show()
     
     def plot(self):
         thickness = self.thickness
@@ -175,20 +192,3 @@ class plano_convex(Lens):
         print("n:",self.n)
         print("radius:",  self.radius)
         print("thickness:", self.thickness)
-
-
-#Example Code
-if __name__ == "__main__":
-
-    #Initialize Lens
-    Lens1 = plano_convex(1.5168, 20, 2)
-    Lens2 = plano_convex(2.635, 30, 2)
-
-    #Run the Ray Tracing
-    example1 = Product_Matrix()
-    example1.start(5, 11, 0.01,2,)
-    example1.Add_Lens(Lens1)
-    example1.Current()
-    example1.Matrix_state()
-    example1.plot()
-    example1.spherical_aberation()
