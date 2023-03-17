@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from exactraytrace.Surfaces import *
+from exactraytrace.Surfaces import sphere_refract_ray,plane_refract_ray
 from exactraytrace.Functions import safe_arange
 
 """ 
