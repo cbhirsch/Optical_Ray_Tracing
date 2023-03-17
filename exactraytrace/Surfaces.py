@@ -1,13 +1,5 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Mon Feb 27 13:07:35 2023
-
-@author: Bryce
-"""
-
 import numpy as np
-import matplotlib.pyplot as plt
-from safe_arange import *
+from exactraytrace.Functions import safe_arange
 
 def sphere_refract_ray(y, radius, thickness,n,dz,dec):
     
@@ -21,5 +13,16 @@ def sphere_refract_ray(y, radius, thickness,n,dz,dec):
     theta = phi2-phi1 
     slope = np.tan(theta)
     ray = (slope*(z-sag)+y)
-    
     return ray, slope, z
+
+    
+#Refraction at a planar surface
+def plane_refract_ray(y, slope, thickness,n, z):
+    
+    theta1 = np.arctan(slope)
+    theta2 = np.arcsin(n*np.sin(theta1))
+    slope2 = np.tan(theta2)
+    ray_air = ((z-thickness)* slope2 + y)
+    
+    return ray_air
+
