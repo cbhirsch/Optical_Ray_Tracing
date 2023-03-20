@@ -56,24 +56,46 @@ class Product_Matrix:
 
         #Designating space for raymatrix
 
-        self.raymatrix = np.zeros((len(self.y), dist))
+        self.raymatrix = np.zeros((len(self.y), int(dist/dz)+1))
         
         #This function will fill the starting values in the raymatrix
         if inf == "True":
             for i in range(0,len(self.y)):
                 #This term will determine rays current slope
                 self.slope[i] = 0
-                self.raymatrix[i] = self.y[i]*np.ones(dist+1)
+                self.raymatrix[i] = self.y[i]*np.ones(int(dist/dz)+1)
         else:
             pass
 
         self.z_optaxis = safe_arange(0,dist, dz, dec)
+        print("1st ray x & Y: \n", self.z_optaxis.shape, self.raymatrix[i].shape)
         
 
 
 
     def Matrix_state(self):
         print("raymatrix: \n", self.raymatrix.shape)
+
+    def New_Add_Lens(self, Lens):
+        self.thickness = Lens.thickness
+
+        #Setting up new Z-axis
+        end_axis = self.z_optaxis[-1] #End of current axis
+        add_axis = safe_arange(end_axis, (self.thickness + Lens.dist),self.dz, self.dec)
+        self.z_optaxis = np.concatenate((self.z_optaxis, add_axis[1:]))
+
+        #Setting up new raymatrix
+        add_raymatrix = np.zeros((len(self.y),(len(add_axis))))
+        print("shape additional ray matrix: \n", add_raymatrix.shape)
+
+        #ray tracing through surfaces
+        for i in range(0, len(self.y)):
+            #Refraction at spherical surface
+            [ray_lens, slope, x_lens] =  sphere_refract_ray(self.y[i], Lens.radius, Lens.thickness, Lens.n, self.dz, self.dec)
+            
+            #Refractionat plane surface
+            ray_air = plane_refract_ray(ray_lens[-1], slope, Lens.thickness, Lens.n, z_back)
+
 
     def Add_Lens(self, Lens):
         self.thickness = Lens.thickness
@@ -182,13 +204,15 @@ class Lens:
     pass
 
 class plano_convex(Lens):
-    def __init__(self, n, radius, thickness):
+    def __init__(self, n, radius, thickness,dist = 5.0):
         self.n = n
         self.radius = radius
         self.thickness = thickness
+        self.dist = dist
     
     def Current(self):
         print("This is the information Lens:")
         print("n:",self.n)
         print("radius:",  self.radius)
         print("thickness:", self.thickness)
+        print("distance to next:", self.dist)
