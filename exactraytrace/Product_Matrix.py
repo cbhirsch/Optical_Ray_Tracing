@@ -41,12 +41,17 @@ class Product_Matrix:
 
     inf- This dictates whether the rays are projecting from a focus point or are parellel
     which is considered infinity focus in optics
+
+    This function will establish a raymatrix that consists of the specified # of rays & the associated slope of the rays
     """
 
     def start(self,aperture, number_rays, dz, dec, dist = 0, inf = "True"):
+
+        print("-----start Called-------\n")
+
         self.aperture = aperture
         self.number_rays = number_rays
-        self.slope = np.zeros(number_rays, dtype= 'int', order = 'C')
+        self.slope = np.zeros(number_rays, dtype= 'int', order = 'C') #This value is the slope for each ray
         self.dist = dist
         self.dz = dz
         self.dec = dec
@@ -68,35 +73,62 @@ class Product_Matrix:
         else:
             pass
 
-        self.z_optaxis = safe_arange(0,dist, dz, dec)
-        self.Prev_Start = self.z_optaxis[0] #This variable tracks previous ray starting location
-        print("1st ray x & Y: \n", self.z_optaxis.shape, self.raymatrix[i].shape)
-        
+        self.x_optaxis = safe_arange(0,dist, dz, dec)
+        self.Prev_Start = self.x_optaxis[0] #This variable tracks previous ray starting location
+        print("\nStart Ouput")
+        print("1st ray x & Y shape:", self.x_optaxis.shape, self.raymatrix.shape)
+        print("1st ray x & Y start:", self.x_optaxis[0], self.raymatrix[:,0])
+        print("1st ray x & Y end:", self.x_optaxis[-1], self.raymatrix[:,-1])
+        print("Slope of Rays:", self.slope, "\n")
 
-
-
-    def Matrix_state(self):
-        print("raymatrix: \n", self.raymatrix.shape)
 
     def New_Add_Lens(self, Lens):
-        self.thickness = Lens.thickness
 
-        #Setting up new Z-axis
-        end_axis = self.z_optaxis[-1] #End of current axis
-        print("end_axis:",end_axis)
-        add_axis = safe_arange(end_axis, (self.thickness + Lens.dist),self.dz, self.dec)
-        self.z_optaxis = np.concatenate((self.z_optaxis, add_axis[1:]))
+        print("-----New_Add_Lens Called-------\n")
+
+        #Reading in Lens Data
+        self.n = Lens.n
+        self.radius = Lens.radius
+        self.thickness = Lens.thickness
+        self.dist = Lens.dist
+
+        print("Read the following Lens Data:")
+        print("n = ", self.n)
+        print("radius = ", self.radius)
+        print("thickness = ",self.thickness)
+        print("distance = ", self.dist, "\n")
+
+        #Setting up new x-axis
+        end_axis = self.x_optaxis[-1] #End of current axis
+        add_axis = safe_arange(end_axis + self.dz, (self.thickness + self.dist),self.dz, self.dec)
+        print("Properties of new additional x axis:")
+        print("shape of additional x axis:", add_axis.shape)
+        print("start value of additional x axis:", add_axis[0])
+        print("end value of additional x axis", add_axis[-1], "\n")
 
         #Setting up new raymatrix
         add_raymatrix = np.zeros((len(self.y),len(add_axis)), dtype = float, order = 'C')
-        print("shape additional ray matrix: \n", add_raymatrix.shape)
+        print("additional raymatrix data designated properties:")
+        print("Shape of additional raymatrix:", add_raymatrix.shape)
+        print("starting values of additional raymatrix:", add_raymatrix[:,0])
+        print("Ending values of additional raymatrix:", add_raymatrix[:,-1], "\n")
+        
+        #Testing Plot
+        fig, ray_tracing = plt.subplots()
+        ray_tracing.set_ylim([-8,8])
+        ray_tracing.set_xlim([0,42])
 
-        print("before loop")
+        print("---Started ray tracing through lens:---\n")
+
         #ray tracing through surfaces
         for i in range(0, len(self.y)):
-            print("iteration #:", i)
+            print("Ray #:", i,"\n")
             #Refraction at spherical surface
             [ray_lens, slope, x_lens] =  sphere_refract_ray(self.y[i], Lens.radius, Lens.thickness, Lens.n, self.dz, self.dec, self.Prev_Start,self.dist ,self.slope[i])
+            print("Spherical Lens Outputs:")
+            print("Output Shape of X & Y:", x_lens.shape, ray_lens.shape)
+            print("starting values of X & Y:", x_lens[0], ray_lens[-1])
+            print("Ending values of X & Y:", x_lens[-1], ray_lens[-1],"\n")
 
             #Refractionat plane surface
             [ray_air,slope] = plane_refract_ray(ray_lens[-1], slope, Lens.thickness, Lens.n, add_axis)
@@ -106,6 +138,22 @@ class Product_Matrix:
             print("total ray shape:", Total_Ray.shape)
             print("start:", Total_Ray[0])
             print("end:", Total_Ray[-1])
+            ray_tracing.plot(self.z_optaxis, Total_Ray[201:], 'b')
+            plt.show()
+
+
+
+
+
+        def new_plot(self):
+            fig, ray_tracing = plt.subplots()
+            ray_tracing.set(xlim = (min(self.z_optaxis)-1, max(self.z_optaxis)),ylim = (min(self.y)-6,max(self.y)+6))
+            for i in range(0,len(self.y)):
+                ray_tracing.plot(self.z_optaxis, self.raymatrix[i], 'r') #Rays
+        
+            plt.show()       
+        
+            
 
 
 
@@ -149,13 +197,7 @@ class Product_Matrix:
 
         return self.raymatrix, self.z_front, self.z_optaxis, zmax, self.thickness
     
-    def new_plot(self):
-        fig, ray_tracing = plt.subplots()
-        ray_tracing.set(xlim = (min(self.z_optaxis)-1, max(self.z_optaxis)),ylim = (min(self.y)-6,max(self.y)+6))
-        for i in range(0,len(self.y)):
-            ray_tracing.plot(self.z_optaxis, self.raymatrix[i], 'r') #Rays
-        
-        plt.show()
+
     
     def plot(self):
         thickness = self.thickness
@@ -205,12 +247,6 @@ class Product_Matrix:
         plt.show()
 
 #Lens Setup
-
-""" 
-Currently trying to get this class to take the output 
-of the start class.  
-
-"""
 
 class Lens:
     pass

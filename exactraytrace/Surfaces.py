@@ -14,25 +14,14 @@ def sphere_refract_ray(y, radius, thickness,n,dz,dec,prev = 0, dist= 0,slope = 0
     #Lens Surface for plotting
     x_Lens = safe_arange(0, thickness,dz, dec)
     Lens_Surf = -np.sqrt(radius**2 - np.power((x_Lens - radius),2))
-    
-    """ 
-    #Plotting for reference
-    fig, pltcheck = plt.subplots()
-    pltcheck.plot(x_inc,Inc_Ray,'r')
-    pltcheck.plot(x_Lens+dist,Lens_Surf, x_Lens+dist,-Lens_Surf,'b', linewidth = 2.0) 
-    """
 
     try:
         idx = np.argwhere(np.diff(np.sign(Inc_Ray[int(dist/dz):]-Lens_Surf))).flatten()
         var = idx[0]
-        #pltcheck.plot(x_inc[var]+dist,Inc_Ray[var],'ro')
     except:
         idx = np.argwhere(np.diff(np.sign(Inc_Ray[int(dist/dz):]-(-Lens_Surf)))).flatten()
         var = idx[0]
-        #pltcheck.plot(x_inc[var]+dist,Inc_Ray[var],'ro')
     
-    #plt.show()
-
     
     sag = radius - np.sqrt(radius**2 - Inc_Ray[var]**2) #lens sag at y
     z_lens = safe_arange(sag, thickness, dz, dec)
@@ -58,11 +47,7 @@ def sphere_refract_ray(y, radius, thickness,n,dz,dec,prev = 0, dist= 0,slope = 0
     else:
         y_inc = Inc_Ray[:(len(Inc_Ray)-len(ray)-1)]
         ray_tot = np.concatenate((y_inc,ray))
-    fig, raycheck = plt.subplots()
-    raycheck.set(xlim = (0, 30))
-    raycheck.plot(x_Lens+dist,Lens_Surf, x_Lens+dist,-Lens_Surf,'b', linewidth = 2.0)
-    raycheck.plot( x_tot, ray_tot, 'b')
-    #plt.show()
+        
     return ray_tot, slope, x_tot
 
     
