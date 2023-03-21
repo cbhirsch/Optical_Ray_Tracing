@@ -84,14 +84,14 @@ class Product_Matrix:
         #Setting up new Z-axis
         end_axis = self.z_optaxis[-1] #End of current axis
         print("end_axis:",end_axis)
-        z_back = safe_arange(end_axis+self.thickness, Lens.dist,self.dz, self.dec)
         add_axis = safe_arange(end_axis, (self.thickness + Lens.dist),self.dz, self.dec)
         self.z_optaxis = np.concatenate((self.z_optaxis, add_axis[1:]))
 
         #Setting up new raymatrix
-        add_raymatrix = np.zeros((len(self.y),(len(add_axis))))
+        add_raymatrix = np.zeros((len(self.y),len(add_axis)), dtype = float, order = 'C')
         print("shape additional ray matrix: \n", add_raymatrix.shape)
 
+        print("before loop")
         #ray tracing through surfaces
         for i in range(0, len(self.y)):
             print("iteration #:", i)
@@ -99,7 +99,7 @@ class Product_Matrix:
             [ray_lens, slope, x_lens] =  sphere_refract_ray(self.y[i], Lens.radius, Lens.thickness, Lens.n, self.dz, self.dec, self.Prev_Start,self.dist ,self.slope[i])
 
             #Refractionat plane surface
-            ray_air = plane_refract_ray(ray_lens[-1], slope, Lens.thickness, Lens.n, z_back)
+            [ray_air,slope] = plane_refract_ray(ray_lens[-1], slope, Lens.thickness, Lens.n, add_axis)
 
             #Adding Rays 
             Total_Ray = np.concatenate((ray_lens,ray_air))
@@ -131,7 +131,7 @@ class Product_Matrix:
             [ray_lens, slope, x_lens] =  sphere_refract_ray(self.y[i], Lens.radius, Lens.thickness, Lens.n, self.dz, self.dec)
 
             #Refractionat plane surface
-            ray_air = plane_refract_ray(ray_lens[-1], slope, Lens.thickness, Lens.n, z_back)
+            ray_air = plane_refract_ray(ray_lens[-1], slope, Lens.thickness, Lens.n, Lens.dist)
 
             #Incomeing Ray
             x_front_air = safe_arange(0, x_lens[0], self.dz, self.dec)
