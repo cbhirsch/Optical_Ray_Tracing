@@ -51,7 +51,7 @@ class Product_Matrix:
 
         self.aperture = aperture
         self.number_rays = number_rays
-        self.slope = np.zeros(number_rays, dtype= 'int', order = 'C') #This value is the slope for each ray
+        self.slope = np.zeros(number_rays, dtype= 'float', order = 'C') #This value is the slope for each ray
         self.dist = dist
         self.dz = dz
         self.dec = dec
@@ -74,7 +74,7 @@ class Product_Matrix:
             pass
 
         self.x_optaxis = safe_arange(0,dist, dz, dec)
-        self.Prev_Start = self.x_optaxis[0] #This variable tracks previous ray starting location
+        self.Prev_xoptaxis = self.x_optaxis #This variable tracks previous ray starting location
         print("\nStart Ouput")
         print("1st ray x & Y shape:", self.x_optaxis.shape, self.raymatrix.shape)
         print("1st ray x & Y start:", self.x_optaxis[0], self.raymatrix[:,0])
@@ -84,7 +84,17 @@ class Product_Matrix:
 
     def New_Add_Lens(self, Lens):
 
-        print("-----New_Add_Lens Called-------\n")
+        print("------New_Add_Lens Called-------\n")
+        #Reading in previous conditions
+        print("Previous Ray Conditions")
+        print("previous X & Y shape", self.x_optaxis.shape, self.raymatrix.shape)
+        print("previous X & Y start values:", self.x_optaxis[0] ,self.raymatrix[:,0])
+        print("previous X & Y end values", self.x_optaxis[-1],self.raymatrix[:,-1],"\n")
+
+        print("previous slope of rays:", self.slope)
+        print("ending y values:", self.y)
+
+
 
         #Reading in Lens Data
         self.n = Lens.n
@@ -100,10 +110,10 @@ class Product_Matrix:
 
         #Setting up new x-axis
         end_axis = self.x_optaxis[-1] #End of current axis
-        add_axis = safe_arange(end_axis + self.dz, (self.thickness + self.dist),self.dz, self.dec)
+        add_axis = safe_arange(end_axis + self.dz, (end_axis + self.thickness + self.dist),self.dz, self.dec)
         print("Properties of new additional x axis:")
         print("shape of additional x axis:", add_axis.shape)
-        print("start value of additional x axis:", add_axis[0])
+        print("start value of additional x axis:", add_axis[0]) 
         print("end value of additional x axis", add_axis[-1], "\n")
 
         #Setting up new raymatrix
@@ -113,10 +123,6 @@ class Product_Matrix:
         print("starting values of additional raymatrix:", add_raymatrix[:,0])
         print("Ending values of additional raymatrix:", add_raymatrix[:,-1], "\n")
         
-        #Testing Plot
-        fig, ray_tracing = plt.subplots()
-        ray_tracing.set_ylim([-8,8])
-        ray_tracing.set_xlim([0,42])
 
         print("---Started ray tracing through lens:---\n")
 
@@ -124,22 +130,63 @@ class Product_Matrix:
         for i in range(0, len(self.y)):
             print("Ray #:", i,"\n")
             #Refraction at spherical surface
-            [ray_lens, slope, x_lens] =  sphere_refract_ray(self.y[i], Lens.radius, Lens.thickness, Lens.n, self.dz, self.dec, self.Prev_Start,self.dist ,self.slope[i])
+            [ray_lens, slope1, x_lens] =  sphere_refract_ray(self.y[i], Lens.radius, Lens.thickness, Lens.n, self.dz, self.dec, self.Prev_xoptaxis,self.dist ,self.slope[i])
             print("Spherical Lens Outputs:")
+            print("slope = ", slope1)
             print("Output Shape of X & Y:", x_lens.shape, ray_lens.shape)
             print("starting values of X & Y:", x_lens[0], ray_lens[-1])
             print("Ending values of X & Y:", x_lens[-1], ray_lens[-1],"\n")
 
             #Refractionat plane surface
-            [ray_air,slope] = plane_refract_ray(ray_lens[-1], slope, Lens.thickness, Lens.n, add_axis)
+            [ray_air,slope2] = plane_refract_ray(ray_lens[-1], slope1, Lens.thickness, Lens.n, Lens.dist, x_lens, self.dz, self.dec)
 
             #Adding Rays 
-            Total_Ray = np.concatenate((ray_lens,ray_air))
-            print("total ray shape:", Total_Ray.shape)
-            print("start:", Total_Ray[0])
-            print("end:", Total_Ray[-1])
-            ray_tracing.plot(self.z_optaxis, Total_Ray[201:], 'b')
+            add_raymatrix[i] = np.concatenate((ray_lens[1:],ray_air))
+            print("total additional ray shape:", add_raymatrix[i].shape)
+            print("start:", add_raymatrix[i,0])
+            print("end:", add_raymatrix[i,-1],"\n")
+
+            print("total additional x axis shape:", add_axis.shape)
+            print("start:", add_axis[0])
+            print("end:", add_axis[-1],"\n")
+
+            #Changing Global Product Matrix Values
+            self.y[i] = add_raymatrix[i,-1] 
+            self.slope[i] = slope2
+            
+            #print checking new globals
+            print("global matrix value changed too:")
+            print("ending ray y value:", self.y[i])
+            print("ending slope value:", self.slope[i])
+
+            fig4, testplot4 = plt.subplots()
+            testplot4.set_ylim(-8,8)
+            testplot4.set_xlim(0,48)
+            testplot4.plot( add_axis, add_raymatrix[i], 'r')
             plt.show()
+            plt.close()
+
+        #rewrite the x axis
+        self.x_optaxis = np.concatenate((self.x_optaxis,add_axis))
+
+
+        self.raymatrix = np.concatenate((self.raymatrix,add_raymatrix), axis = 1)
+        fig, testplot4 = plt.subplots()
+        testplot4.set_ylim(-8,8)
+        testplot4.set_xlim(0,48)
+        for i in range(0, len(self.y)):
+            testplot4.plot( self.x_optaxis, self.raymatrix[i], 'r')
+
+        print("-------global Matrix check----------")
+        print("check y matrix:", self.y)
+        print("check slope:", self.slope)
+
+        
+        plt.show()
+        plt.close()
+
+
+
 
 
 
