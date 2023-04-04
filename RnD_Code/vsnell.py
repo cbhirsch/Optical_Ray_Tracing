@@ -31,16 +31,72 @@ def Vec_Refraction(theta_i, n1, n2):
 
 print(Vec_Refraction(15,1, 1.5))
 
-def intersection(x1, x2, y1, y2, r):
 
-    #ray properties
-    dx = x2 - x1
-    dy = y2 - y1
-    dr = np.sqrt(dx**2 + dy**2)
-    D = np.cross([x1, x2],[y1, y2])
-    delta = r**2 * dr - D**2
+def ray_sphere_intersection(ray_origin, theta_i, sphere_center, sphere_radius):
+    """ 
+    Determine the intersection of a ray with a sphere  
+    """
+    #starting Conditions
+    dist = 5
+    [p1x, p1y] = ray_origin
+    rad_i = np.radians(theta_i)
+    slope_i = np.tan(rad_i)
+    
+    #Calculating pt2
+    p2x = dist
+    p2y = slope_i*p2x+ p1y
 
-    return delta
+    #Circle Center
+    [cx, cy] = sphere_center
+
+    #Locating x and y variables
+    [x1, y1] = [(p1x - cx),(p1y - cy)]
+    [x2, y2] = [(p2x - cx),(p2y-cy)]
+
+    #Change in x & y variables
+    [dx, dy] = [(x2-x1),(y2-y1)]
+    dr = (dx ** 2 + dy ** 2)** .5
+    D = (x1 * y2) - (x2 * y1)
+    discriminant = (sphere_radius**2) * (dr**2) - D**2
+
+    if discriminant < 0: #No intersection between circle and line
+        raise ValueError('Ray Doesnt intersect Lens')
+    
+    elif discriminant == 0: #Line is tangent
+        raise ValueError('Ray is tangent to the sphere')
+
+    else: # There may be 0, 1, or 2 intersections with the segment
+        x1 = ((D*dy + sgn(dy)*dx * (discriminant**.5))/dr**2) + cx
+        x2 = ((D*dy - sgn(dy)*dx * (discriminant**.5))/dr**2) + cx  
+        y1 = ((-D*dx + abs(dy) * (discriminant**.5))/ dr**2) + cy
+        y2 = ((-D*dx - abs(dy) * (discriminant**.5))/ dr**2) + cy
+        return x1, y1, x2, y2 
 
 
-print(intersection(0,40,0,40,5))
+def sgn(x):
+    if x < 0:
+        return -1
+    else:
+        return 1
+    
+
+intersection_points = ray_sphere_intersection([0, 0], 15, [10, 0], 5)
+
+print("intersection_points:", intersection_points)
+
+fig, ax = plt.subplots()
+t = np.arange(-np.pi, np.pi, 0.1)
+r = 5
+pos = [10, 0]
+x = r * np.cos(t) + pos[0]
+y = r * np.sin(t) + pos[1]
+ax.plot(x, y, 'b')
+
+if intersection_points is not None:
+    if len(intersection_points) == 2:
+        ax.plot(intersection_points[0], intersection_points[1], 'ro')
+    elif len(intersection_points) == 4:
+        ax.plot(intersection_points[0], intersection_points[1], 'ro')
+        ax.plot(intersection_points[2], intersection_points[3], 'ro')
+
+plt.show()

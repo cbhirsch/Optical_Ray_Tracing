@@ -27,4 +27,4 @@ class TestCalc(unittest.TestCase):
         n2_3 = 1.2
         theta_comp3 = np.degrees(np.arcsin((n1_3*np.sin(np.radians(theta3))/n2_3)))
         theta_test3 = Vec_Refraction(theta3,n1_3,n2_3)
-        self.assertEqual(theta_test3,theta_comp3)
+        self.assertAlmostEqual(theta_test3,theta_comp3, places=3)
