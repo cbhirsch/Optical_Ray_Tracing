@@ -1,10 +1,19 @@
 import exactraytrace as raytrace
 
-#Initialize Lens
-#Lens1 = raytrace.plano_convex(1.5168, 20, 2,dist = 80)
-#Lens2 = raytrace.plano_convex(2.635, 30, 2,dist = 20)
+#Initialize Lens1
+surfaces1 = [float('inf'),float('inf')]
+distances1 = [1.5,5]
+n_val1 = [1.5]
+Lens1 = raytrace.spherical_Lens(surfaces1, distances1, n_val1,diameter = 3)
+
+#Initialize Lens2
+surfaces2 = [float('inf'),float('inf')]
+distances2 = [4,3]
+n_val2 = [1.5]
+Lens2 = raytrace.spherical_Lens(surfaces2, distances2, n_val2,diameter = 3)
 
 #Run the Ray Tracing
 example1 = raytrace.Product_Matrix()
 example1.start(5, 11, dist = 5, inf= False )
-example1.New_Add_Lens(Lens1)
+example1.Add_Lens(Lens1)
+example1.Add_Lens(Lens2)
