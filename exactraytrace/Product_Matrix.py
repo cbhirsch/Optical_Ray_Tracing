@@ -68,6 +68,7 @@ class Product_Matrix:
             [x_vals, y_vals, slope] = refraction_Lens(surfaces, distances, n_vals, diameter, self.y[i],self.slope[i])
             add_xmatrix[i] = x_vals + self.x_axis[i,-1]
             add_ymatrix[i] = y_vals
+            self.slope[i] = slope
 
         self.raymatrix = np.concatenate((self.raymatrix, add_ymatrix), axis = 1)
         self.x_axis = np.concatenate((self.x_axis, add_xmatrix), axis = 1)
@@ -75,7 +76,6 @@ class Product_Matrix:
         fig, ax = plt.subplots()
         for ray in range(0, len(self.y)):
             ax.plot(self.x_axis[ray], self.raymatrix[ray], 'r')
-            print(ray)
 
         ax.axis('equal')
         plt.show()
@@ -83,6 +83,8 @@ class Product_Matrix:
         #update y values
         for ray in range(0, len(self.y)):
             self.y[ray] = self.raymatrix[ray, -1]
+
+        
 
         
 
