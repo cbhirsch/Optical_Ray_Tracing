@@ -14,5 +14,5 @@ Lens2 = raytrace.spherical_Lens(surfaces2, distances2, n_val2,diameter = 3)
 
 #Run the Ray Tracing
 example1 = raytrace.Product_Matrix()
-example1.start(1, 5, dist = 5, inf= False )
+example1.start(1, 5, dist = 10, inf= False )
 example1.Add_Lens(Lens1)

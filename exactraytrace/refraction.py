@@ -57,7 +57,7 @@ def refraction_Lens(surfaces, distances, n_vals, diameter, y_start, slope_start)
             else:
                 x_vals = x_out
                 y_vals = y_out
-                
+
         elif surfaces[i] < 0:
             [n_start, slope_prev, x1, x2, x3, y1, y2, y3] = refract_Neg(surfaces[i], y_prev, slope_prev, n_start, n_surf, distances[i], diameter)
         else:
@@ -91,7 +91,7 @@ def refract_Pos(radius, y_start, slope_start, n_start, n_surf, distance, diamete
     #Calculating the normal vector
     y_norm = pt2_int[1]
     x_norm = np.sqrt(radius**2 - y_norm**2)
-    vec_norm = [x_norm,y_norm]
+    vec_norm = [-x_norm,y_norm]
     N_hat = vec_norm/np.linalg.norm(vec_norm)
 
     #Defining the Input Ray
