@@ -76,8 +76,12 @@ def refract_Pos(radius, y_start, slope_start, n_start, n_surf, distance, diamete
     #Origin of Ray
     ray_origin = [0, y_start]
 
+    #convert slope to vector
+    array_start = np.array([1,slope_start])
+    vector_start = array_start/np.linalg.norm(array_start)
+
     #Intersect previous ray with circle
-    [ x1_int, y1_int, x2_int, y2_int] = ray_sphere_intersection(ray_origin, slope_start, sphere_center, radius, distance)
+    [ x1_int, y1_int, x2_int, y2_int] = ray_sphere_intersection(ray_origin, vector_start, sphere_center, radius, distance)
 
     #output pts
     pt1_int = [x1_int, y1_int]
@@ -138,8 +142,7 @@ def refract_plane(y_start, slope_start, n_start, n_surf, distance):
 def refract_Neg(radius, y_start, slope_start, n_start, n_surf, distance, diameter):
     pass
 
-def ray_sphere_intersection(ray_origin, slope_i, sphere_center, sphere_radius, dist):
-def ray_sphere_intersection(ray_origin, d, c, r):
+def ray_sphere_intersection(p, d, c, r):
     # Calculate intersection of ray with sphere surface
     A = np.dot(d, d)
     B = 2 * np.dot(d, p - c)
