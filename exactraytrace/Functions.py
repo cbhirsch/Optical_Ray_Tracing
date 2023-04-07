@@ -8,3 +8,6 @@ def safe_arange(start, stop, step, dec):
     int_stop = round(round_stop/step)
 
     return step * np.arange(int_start, int_stop+1)
+
+def circle_eq(vals, center, radius):
+    return (vals[0]-center[0])**2 + (vals[1]-center[1])**2 - radius**2

@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from exactraytrace.refraction import *
+from exactraytrace.Functions import safe_arange
 
 class Product_Matrix:
     """ 
@@ -11,11 +12,11 @@ class Product_Matrix:
         self.raymatrix = []
         self.x_axis = []
 
-    def start(self, aperture, number_rays,y_start=0, dist=0, inf = True):
+    def start(self, aperture, number_rays,y_start=0, dist=0, inf = True, dec = 1):
         
         #Setting up rays
-        self.dy = (2*aperture + 1)/number_rays
-        self.y = np.arange(aperture, -aperture-1, -self.dy)
+        self.dy = (2*aperture+1)/number_rays
+        self.y = np.linspace(aperture, -aperture, number_rays)
                 
         #assigning data for slope of rays
         self.slope = np.zeros(number_rays, dtype= 'float', order= 'C')
@@ -40,6 +41,7 @@ class Product_Matrix:
 
         else:
             raise ValueError('Value must be either True or False')
+            
         
     def Add_Lens(self, Lens):
 
@@ -56,11 +58,11 @@ class Product_Matrix:
         #Initialize matrices and designate data for add matrices
         for j in range(0, len(surfaces)):
             if surfaces[j] == float('inf'):
-                add_xmatrix = np.hstack((add_xmatrix,np.zeros((11,2))))
-                add_ymatrix = np.hstack((add_ymatrix,np.zeros((11,2))))
+                add_xmatrix = np.hstack((add_xmatrix,np.zeros((len(self.y),2))))
+                add_ymatrix = np.hstack((add_ymatrix,np.zeros((len(self.y),2))))
             else:
-                add_xmatrix = np.hstack((add_xmatrix,np.zeros((11,3))))
-                add_ymatrix = np.hstack((add_ymatrix,np.zeros((11,3))))
+                add_xmatrix = np.hstack((add_xmatrix,np.zeros((len(self.y),2))))
+                add_ymatrix = np.hstack((add_ymatrix,np.zeros((len(self.y),2))))
 
 
         #Ray Tracing Through Surfaces
