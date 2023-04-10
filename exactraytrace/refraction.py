@@ -3,12 +3,10 @@ import matplotlib.pyplot as plt
 from exactraytrace.Functions import circle_eq
 from scipy.spatial.distance import cdist
 
-def refraction_Lens(surfaces, distances, n_vals, diameter, y_start, slope_start):
+def refraction_Lens(surfaces, distances, n_vals, diameter, start_pt, phantom_ray):
 
     #Initializing starting values
     n_start = 1.0
-    y_prev = y_start
-    slope_prev = slope_start
     x_vals = []
     y_vals = []
 
@@ -20,12 +18,13 @@ def refraction_Lens(surfaces, distances, n_vals, diameter, y_start, slope_start)
             n_surf = 1.0
 
         if surfaces[i] == float('inf'):
-            [n_start,slope_prev, x1, x2, y1, y2] = refract_plane(y_prev, slope_prev, n_start, n_surf, distances[i])
-            y_prev = y2
+            [n_start,phantom_ray, end_pt] = refract_plane(start_pt, phantom_ray, n_start, n_surf, distances[i])
+            #setting end point to new start pt
+            start_pt = end_pt
 
             #Create Output Arrays to add to the x_vals & y_vals
-            x_out = np.array([x1, x2])
-            y_out = np.array([y1, y2])
+            x_out = np.array([end_pt[0,0]])
+            y_out = np.array([end_pt[0,1]])
 
             #Add the output arrays to x_val & y_vall arrays
             if len(x_vals) > 0:
@@ -40,8 +39,8 @@ def refraction_Lens(surfaces, distances, n_vals, diameter, y_start, slope_start)
                 y_vals = y_out
 
         elif surfaces[i] > 0:
-            [n_start, slope_prev, x1, x2, y1, y2] = refract_Pos(surfaces[i], y_prev, slope_prev, n_start, n_surf, distances[i], diameter)
-            y_prev = y2
+            [n_start, phantom_ray, x1, x2, y1, y2] = refract_Pos(surfaces[i], start_pt, phantom_ray, n_start, n_surf, distances[i], diameter)
+            start_pt = y2
 
             #Create Output Arrays to add to the x_vals & y_vals
             x_out = np.array([x1, x2])
@@ -60,11 +59,11 @@ def refraction_Lens(surfaces, distances, n_vals, diameter, y_start, slope_start)
                 y_vals = y_out
 
         elif surfaces[i] < 0:
-            [n_start, slope_prev, x1, x2, x3, y1, y2, y3] = refract_Neg(surfaces[i], y_prev, slope_prev, n_start, n_surf, distances[i], diameter)
+            [n_start, phantom_ray, x1, x2, x3, y1, y2, y3] = refract_Neg(surfaces[i], start_pt, phantom_ray, n_start, n_surf, distances[i], diameter)
         else:
             raise ValueError('Entry must be a non zero float or integer value') 
     
-    return x_vals, y_vals, slope_prev
+    return x_vals, y_vals, phantom_ray
         
 def refract_Pos(radius, y_start, slope_start, n_start, n_surf, distance, diameter):
 
@@ -117,11 +116,11 @@ def refract_Pos(radius, y_start, slope_start, n_start, n_surf, distance, diamete
 
     return n_surf, slope_new, x1, x2, y1, y2
 
-def refract_plane(y_start, slope_start, n_start, n_surf, distance):
+def refract_plane(origin, phantom_ray_start, n_start, n_surf, distance):
 
     #Defining the Input Ray
-    rad_i = np.arctan(slope_start)
-    I_hat = np.array([np.cos(rad_i),np.sin(rad_i)])
+    mag = np.linalg.norm(phantom_ray_start)
+    I_hat = phantom_ray_start/mag
 
     #Normal Vector for a plane always will be (-1, 0)
     N_hat = np.array([-1,0])
@@ -130,14 +129,15 @@ def refract_plane(y_start, slope_start, n_start, n_surf, distance):
     T_hat = vector_refraction(I_hat, N_hat, n_start, n_surf)
 
     #converting T_hat to slope
-    slope_new = T_hat[1]/T_hat[0]
+    phantom_ray_new = T_hat
+
+    #T_hat normalized aroun x
+    x_vector = np.array([round(T_hat[0]/T_hat[0], 2), round(T_hat[1]/T_hat[0],2)])
 
     #Solving for x & y values
-    [x1, x2] = np.array([0,distance])
-    y1 = y_start
-    y2 = slope_new*x2 + y1
+    end_pt = origin + distance * x_vector
 
-    return n_surf, slope_new, x1, x2, y1, y2 
+    return n_surf, phantom_ray_new, end_pt 
 
 def refract_Neg(radius, y_start, slope_start, n_start, n_surf, distance, diameter):
     pass
