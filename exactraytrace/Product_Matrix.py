@@ -1,194 +1,112 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from exactraytrace.Surfaces import sphere_refract_ray,plane_refract_ray
-from exactraytrace.Functions import safe_arange
+from exactraytrace.refraction import *
 
-""" 
-Main Program 
-This describes the ultimate goal of this program and how it's 
-intended to be used when called by a user.
-Current program may or may not operate this way currently.
-
-The main program will work by calling functions as follows below:
-
-#Starting Conditions
-start can be equal too 'inf' or 'point'
-start = exactraytrace.start(start = 'inf', dist, #_of_rays, aperture)
-
-#Lens1
-lens_1 = exactraytrace.lens(front_surf, back_surface, dia, n, dist)
-
-Will neet to return the ending location of y and a slope value and
-communicate this to the next call location.
-
-#Lens2
-lens_2 = exactraytrace.lens(front_surf, back_surface, dia, n, dist)
-
-Will neet to return the ending location of y and a slope value and
-communicate this to the next call location.
-
-#Finish
-Final = concatenate(start, lens_1, len_2)
-
-This final function will combine a ray matrix for both X & Y terms
-
-plot
-
-plt.show()
-
-This will plot all data for the Ray Matrix terms
-
-"""
 class Product_Matrix:
+    """ 
+    Designates the objec that will be used to build the matrix for plotting
+    the rays as they travel through the lens system.
+    """
     def __init__(self):
-        self.raymatrix = []
+        self.raymatrix = np.array([])
+        self.x_axis = np.array([])
+        self.phantom_rays = np.array([])
+        self.phantom_raypoint = np.array([])
 
-    def Current(self):
-        print("This is the information on current product matrix:")
-        print("Aperture:",self.aperture)
-        print("# of Rays:",  self.number_rays)
-        print("decimal places:", self.dec)
-        print("y rays:", self.y)
-        print("Lens Radius:", self.radius)
+    def start(self, aperture, number_rays,y_start=0, dist=0, inf = True):
 
-    def start(self,aperture, number_rays, dz, dec, dist = 0):
-        self.aperture = aperture
+        #Reading in number of rays
+
         self.number_rays = number_rays
-        # This is a placeholder for now
-        self.slope = 0
-        self.dz = dz
-        self.dec = dec
+        
+        #Setting up rays
+        start_rayheight = np.linspace(aperture, -aperture, number_rays)
+                
+        #assigning data for phantom ray & Ray point
+        self.phantom_rays = np.zeros((number_rays,2), dtype= 'float', order= 'C')
+        self.phantom_raypoint = np.zeros((number_rays,2), dtype= 'float', order= 'C')
 
-        #Generate ray starting heights
-        self.dy = (2*aperture + 1)/number_rays
-        self.y = safe_arange(-aperture, aperture, self.dy, dec)
+        #Designating space for raymatrices
+        self.raymatrix = np.zeros((number_rays,1))
+        self.x_axis = np.zeros((number_rays,1))
 
-    def Matrix_state(self):
-        print("raymatrix: \n", self.raymatrix.shape)
+        if inf == True: # If inf = True set up parallel rays
+            for i in range(0, number_rays):
+                #This term will determine rays starting point
+                self.raymatrix[i] = start_rayheight[i]*np.ones(1)
+                self.x_axis[i] = [0]
 
+                #This is the phantom ray in the form ray = x*i_hat + y*j_hat & Phantom Ray point
+                self.phantom_rays[i] = [1,0]
+                self.phantom_raypoint[i] = np.array([0,self.raymatrix[i]]) + dist * self.phantom_rays[i]
+
+        elif inf == False: #If inf = False rays will become from a specific object distance
+            for i in range(0, number_rays):
+                #This term will determin rays current slope
+                self.raymatrix[i] = np.array([0])
+                self.x_axis[i] = np.array([0])
+
+                 #This is the phantom ray in the form ray = x*i_hat + y*j_hat normalized arount x & Phantom Ray point
+                self.phantom_rays[i] = np.array([(dist/dist),(start_rayheight[i]/dist)])
+                self.phantom_raypoint[i] = np.array([0,0]) + dist * self.phantom_rays[i]
+        else:
+            raise ValueError('Value must be either True or False')
+            
+        
     def Add_Lens(self, Lens):
-        self.thickness = Lens.thickness
 
-        self.radius = Lens.radius
-        power = ( Lens.n - 1)/Lens.radius #lens power
-        f = 1/power #paraxial focal length
+        #Reading in lens data
+        surfaces = Lens.surfaces
+        distances = Lens.distances
+        n_vals = Lens.n_vals
+        diameter = Lens.diameter
 
-        #setting up the Z-Axis
-        zmax = np.floor(f + .1*f)
-        self.z_front = safe_arange(0,Lens.thickness, self.dz, self.dec)
-        z_back = safe_arange(Lens.thickness, zmax+2*self.dz, self.dz, self.dec)
-        self.z_optaxis = np.concatenate((self.z_front, z_back))
+        #Reading in start point
+        start_pt = np.array([self.x_axis[-1], self.raymatrix[-1]])
 
-        #Setting up the empty raymatrix likely to change this step in future iterations
-        self.raymatrix = np.zeros((len(self.y),len(self.z_optaxis)))
+        #initialize add raymatrices
+        add_xmatrix = np.empty((self.number_rays,0))
+        add_ymatrix = np.empty((self.number_rays,0))
 
-        #Ray Tracing
-        for i in range(0, len(self.y)):
-            #Refraction at spherical surface
-            [ray_lens, slope, x_lens] =  sphere_refract_ray(self.y[i], Lens.radius, Lens.thickness, Lens.n, self.dz, self.dec)
+        #Initialize matrices and designate data for add matrices
+        add_xmatrix = np.hstack((add_xmatrix,np.zeros((self.number_rays,len(surfaces)))))
+        add_ymatrix = np.hstack((add_ymatrix,np.zeros((self.number_rays,len(surfaces)))))
 
-            #Refractionat plane surface
-            ray_air = plane_refract_ray(ray_lens[-1], slope, Lens.thickness, Lens.n, z_back)
 
-            #Incomeing Ray
-            x_front_air = safe_arange(0, x_lens[0], self.dz, self.dec)
-            ray_front_air = self.y[i]*np.ones((len(x_front_air)))
+        #Ray Tracing Through Surfaces
+        for i in range(0, self.number_rays):
+            [x_vals, y_vals, self.phantom_rays[i]] = refraction_Lens(surfaces, distances, n_vals, diameter, start_pt,self.phantom_rays[i])
+            add_xmatrix[i] = x_vals + self.x_axis[i,-1]
+            add_ymatrix[i] = y_vals
+            self.phantom_raypoint[i] = np.array([x_vals[-1],y_vals[-1]]) + distances[-1] * self.phantom_rays[i]
 
-            #Create matrix of rays (adjust length if necessary)
-            ray_length = len(ray_lens) + len(ray_air) + len(x_front_air)
-            optic_axis_length = len(self.z_optaxis)
+        self.raymatrix = np.concatenate((self.raymatrix, add_ymatrix), axis = 1)
+        self.x_axis = np.concatenate((self.x_axis, add_xmatrix), axis = 1)
 
-            if ray_length <= optic_axis_length:
-                self.raymatrix[i] = self.raymatrix[i] + np.concatenate((ray_front_air, ray_lens, ray_air))
-            else:
-                concatenated_string = np.concatenate((ray_front_air, ray_lens[0: len(ray_lens)-1], ray_air))
-                self.raymatrix[i] = self.raymatrix[i] + concatenated_string
 
-        return self.raymatrix, self.z_front, self.z_optaxis, zmax, self.thickness
-    
-    def plot(self):
-        thickness = self.thickness
-        x_front = self.z_front
-        self.x_optaxis = self.z_optaxis
+    def print_solution(self):
 
-        #Figure
-        front_lens = np.sqrt(self.radius**2 - np.power((x_front-self.radius),2))
-        fig, ray_tracing = plt.subplots()
-        ray_tracing.set(xlim = (min(self.z_optaxis)-1, max(self.z_optaxis)),ylim = (min(self.y)-6,max(self.y)+6))
-        for i in range(0,len(self.y)):
-            ray_tracing.plot(self.z_optaxis, self.raymatrix[i], 'r') #Rays
+        #Add Phantom Ray points to solution
+        phantom_y = self.phantom_raypoint[:, 1].reshape((11,1))
+        phantom_x = self.phantom_raypoint[:,0].reshape((11,1))
+        self.raymatrix = np.concatenate((self.raymatrix, phantom_y), axis = 1)
+        self.x_axis = np.concatenate((self.x_axis, phantom_x), axis = 1)
+
+        fig, ax = plt.subplots()
+        for ray in range(0, self.number_rays):
+            ax.plot(self.x_axis[ray], self.raymatrix[ray], 'r')
+
+        ax.axis('equal')
+        plt.show()  
+
+
         
-        #Lens front surface
-        ray_tracing.plot(x_front, front_lens,'b', x_front, -front_lens, 'b', linewidth = 3.0)
 
-        # Len Back Surface
-        x_back = [thickness, thickness]
-        y_back = [max(front_lens),-max(front_lens)]
-        ray_tracing.plot(x_back,y_back, 'b', linewidth = 3.0 )
-
-        #Optical axis
-        ray_tracing.plot(self.x_optaxis, np.zeros(len(self.x_optaxis)), 'k--')
         
-        plt.show()
-    
-    def spherical_aberation(self):
-
-        #Find where each ray crosses optical axis
-        ray_focus = np.zeros((1,len(self.y)), dtype = int, order = 'c')
-        for i in range(len(self.y)):
-            ray_focus[0,i]=np.argmin(abs(self.raymatrix[i]))
-
-        #Find where paraxial ray crosses optical axis
-        paraxial_focus = int(ray_focus[0,int(np.ceil(len(self.y)/2))])
-
-        #Ray fan plot
-        fig, ray_fan_plot = plt.subplots()
-        ray_fan_plot.plot(self.y, self.raymatrix[:,paraxial_focus])
-        plt.show()
-
-        #Spherical Aberation
-        pos_y = np.transpose(np.argwhere(self.y>0))
-        spher_ab = self.x_optaxis[ray_focus[0,pos_y[0]]]
-        fig, spher_ab_plot = plt.subplots()
-        spher_ab_plot.plot(spher_ab - spher_ab[1],self.y[np.argwhere(self.y>0)])
-        plt.show()
-
-#Lens Setup
-
-""" 
-Currently trying to get this class to take the output 
-of the start class.  
-
-"""
-
-class Lens:
-    pass
-
-class plano_convex(Lens):
-    def __init__(self, n, radius, thickness):
-        self.n = n
-        self.radius = radius
-        self.thickness = thickness
-    
-    def Current(self):
-        print("This is the information Lens:")
-        print("n:",self.n)
-        print("radius:",  self.radius)
-        print("thickness:", self.thickness)
 
 
-#Example Code
-if __name__ == "__main__":
 
-    #Initialize Lens
-    Lens1 = plano_convex(1.5168, 20, 2)
-    Lens2 = plano_convex(2.635, 30, 2)
+        
+        
 
-    #Run the Ray Tracing
-    example1 = Product_Matrix()
-    example1.start(5, 11, 0.01,2,)
-    example1.Add_Lens(Lens1)
-    example1.Current()
-    example1.Matrix_state()
-    example1.plot()
-    example1.spherical_aberation()
+        
